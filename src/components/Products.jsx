@@ -29,7 +29,11 @@ const ExpandMore = styled((props) => {
     }),
 }));
 
-export default function Products() {
+export default function Products({ searchProducts }) {
+
+    const [search, setSearch] = useState('');
+    const [sort, setSort] = useState();
+
     const dispatch = useDispatch()
     const data = useSelector((state) => state)
     console.log(data, "data");
@@ -43,68 +47,105 @@ export default function Products() {
     const handleAdd = (val) => {
         dispatch(add(val))
     }
+    function handlesort(e) {
+        setSort(e.target.value)
+    }
+    const handleSearchData = (e) => {
+        setSearch(e.target.value);
+    };
 
+
+
+    const sortedProducts = [...productList].sort((a, b) => {
+        if (sort === 'price') {
+            return a.price - b.price;
+        } else if (sort === 'name') {
+            return a.title.localeCompare(b.title);
+        }
+        return 0;
+    });
+
+    const filteredProducts = sortedProducts.filter(product =>
+        product.price.toString().includes(search) || product.title.toLowerCase().includes(search.toLowerCase())
+
+    );
     useEffect(() => {
-
         dispatch(fetchProducts())
-
+        console.log("sortedProducts", sortedProducts);
     }, [])
 
     return (
-        <div>{
-            productList.map((val, ind) => {
-                return (
-                    <React.Fragment key={ind}>
 
-                        <div className="col-3" style={{ display: "inline-block", marginTop: "20px" }}>
-                            <div className="container">
-                                <div className="row" style={{ height: "100%" }}>
-                                    <Card sx={{ maxWidth: 345, height: "100%" }}>
-                                        <CardHeader
 
-                                            action={
-                                                <IconButton aria-label="settings">
-                                                    <MoreVertIcon />
+        <div>
+            <div className='text-center m-3'>
+                <input className='m-2'
+                    type="text"
+                    value={search}
+                    onChange={handleSearchData}
+                    placeholder="Search product"
+                />
+            </div>
+            <select onChange={handlesort} value={sort} >
+                <option value="name"> Name</option>
+                <option value="price">Price</option>
+            </select><br /><br />
+
+
+            {
+                filteredProducts.map((val, ind) => {
+                    return (
+                        <React.Fragment key={ind}>
+
+                            <div className="col-3" style={{ display: "inline-block", marginTop: "20px" }}>
+                                <div className="container">
+                                    <div className="row" style={{ height: "100%" }}>
+                                        <Card sx={{ maxWidth: 345, height: "100%" }}>
+                                            <CardHeader
+
+                                                action={
+                                                    <IconButton aria-label="settings">
+                                                        <MoreVertIcon />
+                                                    </IconButton>
+                                                }
+                                                title={val.title}
+
+                                            />
+                                            <CardMedia
+                                                component="img"
+                                                height="194"
+                                                image={val.images}
+                                                alt="Paella dish"
+                                            />
+                                            <CardContent>
+                                                <Typography variant="h5" color="text.secondary">
+                                                    {`$${val.price}`}
+                                                </Typography>
+                                                <Typography variant="body6" color="text.secondary">
+                                                    {`${val.creationAt}`}
+                                                </Typography>
+                                            </CardContent>
+                                            <CardActions disableSpacing>
+                                                <IconButton aria-label="add to favorites">
+                                                    <FavoriteIcon />
                                                 </IconButton>
-                                            }
-                                            title={val.title}
+                                                <IconButton aria-label="share">
+                                                    <ShareIcon />
+                                                </IconButton>
+                                                <button onClick={() => handleAdd(val)} style={{ marginLeft: "104px", borderRadius: "12px", padding: "5px 6px", color: "white", backgroundColor: "#1976d2" }}>ADD TO CART</button>
+                                            </CardActions>
 
-                                        />
-                                        <CardMedia
-                                            component="img"
-                                            height="194"
-                                            image={val.images}
-                                            alt="Paella dish"
-                                        />
-                                        <CardContent>
-                                            <Typography variant="h5" color="text.secondary">
-                                                {`$${val.price}`}
-                                            </Typography>
-                                            <Typography variant="body6" color="text.secondary">
-                                                {`${val.creationAt}`}
-                                            </Typography>
-                                        </CardContent>
-                                        <CardActions disableSpacing>
-                                            <IconButton aria-label="add to favorites">
-                                                <FavoriteIcon />
-                                            </IconButton>
-                                            <IconButton aria-label="share">
-                                                <ShareIcon />
-                                            </IconButton>
-                                            <button onClick={() => handleAdd(val)} style={{ marginLeft: "104px", borderRadius: "12px", padding: "5px 6px", color: "white", backgroundColor: "#1976d2" }}>ADD TO CART</button>
-                                        </CardActions>
-
-                                    </Card>
+                                        </Card>
+                                    </div>
                                 </div>
+
                             </div>
 
-                        </div>
+                        </React.Fragment>
+                    )
+                })
 
-                    </React.Fragment>
-                )
-            })
-
-        }
+            }
 
         </div >
     )
